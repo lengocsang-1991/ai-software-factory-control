@@ -26,3 +26,17 @@
 - Bổ sung hướng dẫn đóng góp, mã nhận diện owner, mẫu Issue/PR, tài liệu kiến trúc và an ninh.
 - Chuẩn hóa metadata Python, CI kiểm thử đa phiên bản 3.11–3.13.
 - Vẫn là MVP cục bộ, chưa có Agent runtime, RBAC hoặc triển khai production.
+
+## 1.3.2 — 09/11/2026 (kiểm toán và vá lỗi trên nhánh ứng dụng hiện có)
+
+- Chặn giả mạo nhãn simulation để một bản mô phỏng không thể bị coi là kết quả AI thật.
+- Kiểm tra thứ tự, vai trò, dấu simulation, hash của toàn bộ đầu ra trước khi Agent tiếp tục và trước khi duyệt.
+- Bổ sung `automation recover` để xử lý run bị ngắt thủ công, không tự động lặp lời gọi API tốn phí.
+- Khóa giao dịch SQLite trước các chuyển trạng thái nhiệm vụ/gate/stage; kiểm tra cả byte count của bằng chứng.
+- Sửa GitHub Issues pagination (giới hạn 300 và lỗi tường minh khi vượt); xử lý phản hồi sai kiểu an toàn.
+- Từ chối phản hồi OpenAI/Gemini không hoàn tất hoặc sai schema; kiểm soát model id.
+- Từ chối Host lạ trên dashboard localhost (giảm DNS rebinding).
+- Sửa script guard để không nhận việc so khớp chuỗi là bằng chứng xác thực OAuth; CI dùng context thực tế của GitHub Actions.
+- Thêm static safety preflight, regression tests và hướng dẫn nhập vào Google AI Studio.
+- Sửa đường dẫn SQLite mặc định khi cài package, tránh ghi vào thư mục site-packages không có quyền; giữ dữ liệu cũ nếu có.
+- Staging Railway chạy 1.3.1 ghim commit `4b0f9f5`, **không tự cập nhật** khi đẩy code kiểm toán.

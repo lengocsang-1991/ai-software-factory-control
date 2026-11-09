@@ -38,3 +38,12 @@ Nếu lộ, lập tức thu hồi/xoay khóa và kiểm tra lịch sử Git; ch�
 - Worker chạy nền cần một máy chủ và quản trị secrets/chi phí riêng. Không chạy dài hạn trong phiên ChatGPT.
 
 - Gemini adapter dùng Gemini Interactions API `store=false`, chỉ tạo văn bản và yêu cầu GEMINI_API_KEY/GEMINI_MODEL trên host, chưa xác minh bằng lời gọi thực.
+
+## Cập nhật kiểm toán v1.3.2
+
+- Bắt buộc kiểm tra lại hash, vai trò và dấu simulation của đầu ra trước khi tiếp tục/duyệt. Hash nằm cùng database **không phải** bằng chứng chống sửa có chữ ký số.
+- `RUNNING` bị ngắt không tự động được retry; lệnh recover phải do người điều hành thực hiện sau khi kiểm tra worker đã dừng.
+- Dashboard chỉ chấp nhận Host `localhost` hoặc `127.0.0.1` để giảm rủi ro DNS rebinding.
+- Adapter từ chối phản hồi AI không hoàn tất, không đúng schema; không ghi response lỗi chứa secret vào dữ liệu vận hành.
+- CI bổ sung bộ quét tệp nhạy cảm và mẫu token **trong working tree**; phải kiểm tra riêng Git history và các tích hợp ngoài.
+- Đã triển khai worker simulation staging trên Railway tại commit `4b0f9f5`; bản v1.3.2 trong GitHub **không tự làm mới service đã ghim**. Chưa có kiểm thử bảo mật độc lập, xác thực người duyệt, giám sát chi phí hoặc phương án khôi phục production.

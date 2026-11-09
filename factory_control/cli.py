@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sqlite3
 import sys
 from pathlib import Path
@@ -10,12 +11,29 @@ from . import __version__
 from .store import FactoryStore, PRIORITIES, STATUSES, GATE_KINDS
 from .automation import AutomationEngine, RECIPES, SimulationProvider
 
-DEFAULT_DB = Path(__file__).resolve().parents[1] / ".factory-state" / "factory.db"
+LEGACY_DB = Path(__file__).resolve().parents[1] / '.factory-state' / 'factory.db'
+
+
+def default_database_path() -> Path:
+    """Keep old source-checkout data, but avoid writing into site-packages.
+
+    An explicit --db still takes priority over this default.
+    """
+    configured = os.getenv('AI_FACTORY_DB')
+    if configured:
+        return Path(configured).expanduser()
+    if LEGACY_DB.is_file():
+        return LEGACY_DB
+    if os.name == 'nt':
+        root = Path(os.getenv('LOCALAPPDATA') or Path.home()) / 'AI-Software-Factory'
+    else:
+        root = Path(os.getenv('XDG_STATE_HOME') or (Path.home() / '.local' / 'state')) / 'ai-software-factory'
+    return root / 'factory.db'
 
 
 def parser():
     p = argparse.ArgumentParser(prog="factory-control", description="AI Software Factory — quản trị cục bộ (không triển khai tự động)")
-    p.add_argument("--db", default=str(DEFAULT_DB), help="Đường dẫn SQLite; mặc định .factory-state/factory.db")
+    p.add_argument("--db", default=str(default_database_path()), help="Đường dẫn SQLite; mặc định nằm trong user state (hoặc giữ file cũ .factory-state nếu có)")
     p.add_argument("--version", action="version", version=f"factory-control {__version__}")
     cmds = p.add_subparsers(dest="command", required=True)
     cmds.add_parser("init", help="Khởi tạo SQLite local")
@@ -75,6 +93,10 @@ def parser():
     sh = sa.add_parser("show"); sh.add_argument("--run", required=True)
     manifest = sa.add_parser("manifest"); manifest.add_argument("--run", required=True)
     retry = sa.add_parser("retry"); retry.add_argument("--run", required=True)
+    recover = sa.add_parser("recover", help="Thu hồi RUNNING bị treo sau khi xác minh worker đã dừng")
+    recover.add_argument("--run", required=True)
+    recover.add_argument("--stale-seconds", type=int, default=600)
+    recover.add_argument("--confirm-worker-stopped", action="store_true", required=True)
     intake = sa.add_parser("intake", help="Chỉ đọc issue factory:ready do chủ repo tạo; nhập vào SQLite local")
     intake.add_argument("--project", required=True)
     intake.add_argument("--enqueue", action="store_true", help="Đưa issue vào hàng đợi Agent theo discovery")
@@ -118,6 +140,10 @@ def dispatch(store: FactoryStore, args):
         if op == "show": return engine.get(args.run)
         if op == "manifest": return engine.output_manifest(args.run)
         if op == "retry": return engine.retry(args.run)
+        if op == "recover":
+            if not args.confirm_worker_stopped:
+                raise ValueError('Phải xác nhận worker cũ đã dừng')
+            return engine.recover_stale(args.run, stale_seconds=args.stale_seconds)
         if op == "intake":
             from .github_intake import ingest
             return ingest(store, args.project, enqueue=args.enqueue, provider=args.provider)

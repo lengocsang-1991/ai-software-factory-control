@@ -13,7 +13,8 @@ class GitHubTargetTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'SAI TÀI KHOẢN'):
             check('traingheoxaqueht123')
         data = check('lengocsang-1991', 'lengocsang-1991/ai-software-factory-control')
-        self.assertTrue(data['account_verified'])
+        self.assertTrue(data['account_matches_target'])
+        self.assertFalse(data['account_verified'])  # string matching is not OAuth verification
         self.assertFalse(data['publishing_authorized'])
 
     def test_reject_repository_of_other_owner(self):

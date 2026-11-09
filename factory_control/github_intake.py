@@ -18,45 +18,63 @@ from .store import FactoryStore
 OWNER = 'lengocsang-1991'
 ISSUE_LABEL = 'factory:ready'
 REPO_RE = re.compile(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')
+MAX_ISSUE_PAGES = 3
 
 
 def get_approved_issues(repository: str, token: str | None = None) -> list[dict]:
     if not REPO_RE.fullmatch(repository or '') or repository.split('/')[0].lower() != OWNER:
         raise ValueError('GitHub intake bị giới hạn trong repository của lengocsang-1991')
-    url = (f'https://api.github.com/repos/{repository}/issues'
-           '?state=open&labels=factory%3Aready&per_page=30')
     headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'ai-software-factory/1.3'}
     token = token or os.getenv('GITHUB_TOKEN')
     if token:
         headers['Authorization'] = 'Bearer ' + token
-    request = urllib.request.Request(url, headers=headers)
-    try:
-        with urllib.request.urlopen(request, timeout=20) as response:
-            if response.status != 200:
-                raise RuntimeError('GITHUB_HTTP_ERROR')
-            payload = response.read(2_000_001)
-    except (urllib.error.URLError, TimeoutError):
-        raise RuntimeError('GITHUB_UNAVAILABLE') from None
-    if len(payload) > 2_000_000:
-        raise RuntimeError('GITHUB_RESPONSE_TOO_LARGE')
-    data = json.loads(payload)
-    if not isinstance(data, list):
-        raise RuntimeError('GITHUB_UNEXPECTED_RESPONSE')
     accepted = []
-    for issue in data:
-        if 'pull_request' in issue or not isinstance(issue.get('number'), int):
-            continue
-        if (issue.get('user') or {}).get('login', '').lower() != OWNER:
-            continue
-        labels = [x.get('name') for x in issue.get('labels', []) if isinstance(x, dict)]
-        if ISSUE_LABEL not in labels:
-            continue
-        title = str(issue.get('title') or '').strip()
-        if not title:
-            continue
-        accepted.append({'number': issue['number'], 'title': title[:220],
-                         'body': str(issue.get('body') or '')[:1600],
-                         'html_url': f'https://github.com/{repository}/issues/{issue["number"]}'})
+    for page in range(1, MAX_ISSUE_PAGES + 1):
+        # Construct each page locally. Never follow an untrusted Link-header URL.
+        url = (f'https://api.github.com/repos/{repository}/issues'
+               f'?state=open&labels=factory%3Aready&per_page=100&page={page}')
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+                if response.status != 200:
+                    raise RuntimeError('GITHUB_HTTP_ERROR')
+                payload = response.read(2_000_001)
+                response_headers = getattr(response, 'headers', None)
+                link = (response_headers.get('Link', '') if response_headers else '') or ''
+        except (urllib.error.URLError, TimeoutError):
+            raise RuntimeError('GITHUB_UNAVAILABLE') from None
+        if len(payload) > 2_000_000:
+            raise RuntimeError('GITHUB_RESPONSE_TOO_LARGE')
+        try:
+            data = json.loads(payload)
+        except (ValueError, UnicodeError):
+            raise RuntimeError('GITHUB_INVALID_RESPONSE') from None
+        if not isinstance(data, list):
+            raise RuntimeError('GITHUB_UNEXPECTED_RESPONSE')
+        for issue in data:
+            if not isinstance(issue, dict) or 'pull_request' in issue:
+                continue
+            if type(issue.get('number')) is not int or issue['number'] < 1:
+                continue
+            author = issue.get('user')
+            if not isinstance(author, dict) or str(author.get('login', '')).lower() != OWNER:
+                continue
+            raw_labels = issue.get('labels')
+            labels = [x.get('name') for x in raw_labels if isinstance(x, dict)] if isinstance(raw_labels, list) else []
+            if ISSUE_LABEL not in labels:
+                continue
+            title = str(issue.get('title') or '').strip()
+            if not title:
+                continue
+            accepted.append({'number': issue['number'], 'title': title[:220],
+                             'body': str(issue.get('body') or '')[:1600],
+                             'html_url': f'https://github.com/{repository}/issues/{issue["number"]}'})
+        has_more = bool(re.search(r'rel=["\']next["\']', link))
+        if not has_more:
+            break
+        if page == MAX_ISSUE_PAGES:
+            # Never silently ignore the rest of the issues.
+            raise RuntimeError('GITHUB_TOO_MANY_ISSUES')
     return accepted
 
 

@@ -24,6 +24,12 @@ def make_handler(store):
             self.wfile.write(data)
 
         def do_GET(self):
+            # An arbitrary Host could enable DNS rebinding against this
+            # unauthenticated loopback service. Never accept external hosts.
+            host = self.headers.get('Host', '').lower()
+            if host not in ('127.0.0.1', 'localhost', '127.0.0.1:%d' % self.server.server_port,
+                            'localhost:%d' % self.server.server_port):
+                return self.reply(b'{"error":"INVALID_HOST"}', status=403)
             path = unquote(urlsplit(self.path).path)
             try:
                 if path == "/api/health":

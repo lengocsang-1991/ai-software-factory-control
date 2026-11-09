@@ -54,6 +54,11 @@ class DashboardTests(unittest.TestCase):
                 with self.assertRaises(urllib.error.HTTPError) as missing:
                     urllib.request.urlopen(base + "/private", timeout=2)
                 self.assertEqual(missing.exception.code, 404)
+                # Reject hostile Host values to prevent local DNS rebinding.
+                hostile = urllib.request.Request(base + '/api/projects', headers={'Host': 'evil.example'})
+                with self.assertRaises(urllib.error.HTTPError) as denied_host:
+                    urllib.request.urlopen(hostile, timeout=2)
+                self.assertEqual(denied_host.exception.code, 403)
             finally:
                 server.terminate()
                 try:

@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -79,6 +80,21 @@ class FactoryStore:
 
     def __exit__(self, *_):
         self.close()
+
+    @contextmanager
+    def _write_locked(self):
+        """Acquire the write lock before checking a state transition.
+
+        `with self.db` alone only begins the transaction at the first write,
+        which previously allowed two processes to validate stale state.
+        """
+        self.db.execute('BEGIN IMMEDIATE')
+        try:
+            yield
+            self.db.commit()
+        except Exception:
+            self.db.rollback()
+            raise
 
     def _create_schema(self):
         with self.db:
@@ -222,28 +238,32 @@ class FactoryStore:
         if not src.is_file():
             return {"id": evidence_id, "valid": False, "reason": "FILE_MISSING"}
         digest = hashlib.sha256()
+        size = 0
         with src.open("rb") as handle:
             for chunk in iter(lambda: handle.read(1024 * 1024), b""):
                 digest.update(chunk)
-        return {"id": evidence_id, "valid": digest.hexdigest() == evidence["sha256"], "reason": "HASH_MATCH" if digest.hexdigest() == evidence["sha256"] else "HASH_MISMATCH"}
+                size += len(chunk)
+        valid = digest.hexdigest() == evidence['sha256'] and size == evidence['byte_count']
+        return {"id": evidence_id, "valid": valid,
+                "reason": "HASH_MATCH" if valid else "HASH_OR_SIZE_MISMATCH"}
 
     def change_task_status(self, task_id, new_status, evidence_id=None):
-        task = self.task(task_id)
-        if not task:
-            raise ValueError(f"Không tìm thấy nhiệm vụ {task_id}")
-        if new_status not in STATUSES:
-            raise ValueError("Trạng thái nhiệm vụ không hợp lệ")
-        if new_status not in TRANSITIONS[task["status"]]:
-            raise ValueError(f"Không thể chuyển {task['status']} → {new_status}")
-        if new_status == "DONE":
-            if evidence_id is None:
-                raise ValueError("DONE bắt buộc có bằng chứng (--evidence-id)")
-            evidence = self.evidence(evidence_id)
-            if not evidence or evidence["project_id"] != task["project_id"] or evidence["task_id"] != task_id:
-                raise ValueError("Bằng chứng DONE phải gắn đúng nhiệm vụ")
-            if not self.verify_evidence(evidence_id)["valid"]:
-                raise ValueError("Bằng chứng DONE không tồn tại hoặc đã bị thay đổi")
-        with self.db:
+        with self._write_locked():
+            task = self.task(task_id)
+            if not task:
+                raise ValueError(f"Không tìm thấy nhiệm vụ {task_id}")
+            if new_status not in STATUSES:
+                raise ValueError("Trạng thái nhiệm vụ không hợp lệ")
+            if new_status not in TRANSITIONS[task["status"]]:
+                raise ValueError(f"Không thể chuyển {task['status']} → {new_status}")
+            if new_status == "DONE":
+                if evidence_id is None:
+                    raise ValueError("DONE bắt buộc có bằng chứng (--evidence-id)")
+                evidence = self.evidence(evidence_id)
+                if not evidence or evidence["project_id"] != task["project_id"] or evidence["task_id"] != task_id:
+                    raise ValueError("Bằng chứng DONE phải gắn đúng nhiệm vụ")
+                if not self.verify_evidence(evidence_id)["valid"]:
+                    raise ValueError("Bằng chứng DONE không tồn tại hoặc đã bị thay đổi")
             self.db.execute("UPDATE tasks SET status=?,updated_at=? WHERE id=?", (new_status, utc_now(), task_id))
             self._event(task["project_id"], "TASK_STATUS_CHANGED", {"task_id": task_id, "from": task["status"], "to": new_status, "evidence_id": evidence_id})
         return self.task(task_id)
@@ -256,22 +276,22 @@ class FactoryStore:
         return [decisions.get(i, {"project_id": project_id, "gate_number": i, "decision": "PENDING"}) for i in range(1, 9)]
 
     def decide_gate(self, project_id, gate_number, decision, approver, evidence_id, note=""):
-        project = self._project_required(project_id)
-        if project["status"] == "COMPLETE":
-            raise ValueError("Dự án đã hoàn tất, không thể thay đổi cổng")
-        if gate_number != project["stage"]:
-            raise ValueError("Chỉ được quyết định cổng của giai đoạn hiện tại")
-        if decision not in ("APPROVED", "REJECTED"):
-            raise ValueError("Chỉ chấp nhận APPROVED hoặc REJECTED")
-        ev = self.evidence(evidence_id)
-        if not ev or ev["project_id"] != project_id:
-            raise ValueError("Bằng chứng không thuộc dự án")
-        if ev["kind"] != GATE_KINDS[gate_number - 1]:
-            raise ValueError(f"GATE {gate_number} yêu cầu bằng chứng loại {GATE_KINDS[gate_number - 1]}")
-        if not self.verify_evidence(evidence_id)["valid"]:
-            raise ValueError("Bằng chứng không còn nguyên vẹn")
-        approver = required(approver, "người phê duyệt")
-        with self.db:
+        with self._write_locked():
+            project = self._project_required(project_id)
+            if project["status"] == "COMPLETE":
+                raise ValueError("Dự án đã hoàn tất, không thể thay đổi cổng")
+            if gate_number != project["stage"]:
+                raise ValueError("Chỉ được quyết định cổng của giai đoạn hiện tại")
+            if decision not in ("APPROVED", "REJECTED"):
+                raise ValueError("Chỉ chấp nhận APPROVED hoặc REJECTED")
+            ev = self.evidence(evidence_id)
+            if not ev or ev["project_id"] != project_id:
+                raise ValueError("Bằng chứng không thuộc dự án")
+            if ev["kind"] != GATE_KINDS[gate_number - 1]:
+                raise ValueError(f"GATE {gate_number} yêu cầu bằng chứng loại {GATE_KINDS[gate_number - 1]}")
+            if not self.verify_evidence(evidence_id)["valid"]:
+                raise ValueError("Bằng chứng không còn nguyên vẹn")
+            approver = required(approver, "người phê duyệt")
             self.db.execute(
                 "INSERT INTO gates(project_id,gate_number,decision,approver,evidence_id,note,decided_at) "
                 "VALUES(?,?,?,?,?,?,?) ON CONFLICT(project_id,gate_number) DO UPDATE SET "
@@ -283,16 +303,16 @@ class FactoryStore:
         return self.gates(project_id)[gate_number - 1]
 
     def advance(self, project_id):
-        project = self._project_required(project_id)
-        if project["status"] == "COMPLETE":
-            raise ValueError("Dự án đã hoàn tất")
-        stage = project["stage"]
-        gate = self.gates(project_id)[stage - 1]
-        if gate["decision"] != "APPROVED":
-            raise ValueError(f"GATE {stage} chưa được phê duyệt")
-        if not self.verify_evidence(gate["evidence_id"])["valid"]:
-            raise ValueError("Bằng chứng phê duyệt không còn nguyên vẹn")
-        with self.db:
+        with self._write_locked():
+            project = self._project_required(project_id)
+            if project["status"] == "COMPLETE":
+                raise ValueError("Dự án đã hoàn tất")
+            stage = project["stage"]
+            gate = self.gates(project_id)[stage - 1]
+            if gate["decision"] != "APPROVED":
+                raise ValueError(f"GATE {stage} chưa được phê duyệt")
+            if not self.verify_evidence(gate["evidence_id"])["valid"]:
+                raise ValueError("Bằng chứng phê duyệt không còn nguyên vẹn")
             if stage == 8:
                 self.db.execute("UPDATE projects SET status='COMPLETE',updated_at=? WHERE id=?", (utc_now(), project_id))
                 self._event(project_id, "PROJECT_COMPLETED", {"gate": stage})

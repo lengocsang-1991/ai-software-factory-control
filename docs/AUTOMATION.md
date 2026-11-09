@@ -1,10 +1,11 @@
-# AI Software Factory — cơ chế tự động hóa v1.3.1
+# AI Software Factory — cơ chế tự động hóa v1.3.2
 
 ## Phạm vi đã triển khai
 
 - Hàng đợi tác vụ có trạng thái trong SQLite; không ghi dữ liệu khách hàng lên GitHub.
 - Ba recipe: `discovery` (7 Agent), `design-review` (8 Agent), `full-review` (16 Agent).
 - Worker tuần tự có quản lý lỗi, retry, nhật ký và đầu ra mỗi bước kèm SHA-256.
+- Đầu ra được kiểm tra lại trước khi tiếp tục bước sau; worker bị ngắt có chế độ thu hồi thủ công an toàn.
 - Provider mặc định `simulation` để thử hệ thống, **không dùng làm căn cứ phê duyệt**.
 - Provider OpenAI Responses API hoặc Google Gemini Interactions API chỉ phát sinh chi phí khi tự cấu hình `OPENAI_API_KEY`, chỉ định model và chạy worker có `--confirm-cost`.
 - Kết quả từ mô hình là **bản dự thảo/chuyên gia đánh giá**, không phải mã nguồn đã biên dịch hoặc bản kiểm toán độc lập thực sự.
@@ -13,7 +14,7 @@
 
 ## Cài đặt
 
-Python 3.11+, không yêu cầu thư viện bên ngoài ở chế độ local.
+Python 3.11+, không yêu cầu thư viện bên ngoài ở chế độ local. Theo bản 1.3.2, SQLite mặc định nằm trong vùng state của người dùng; có thể chỉ định đường dẫn bằng `--db` hoặc biến môi trường `AI_FACTORY_DB`. Nếu DB cũ `.factory-state/factory.db` còn tồn tại, CLI vẫn nhận để không mất dữ liệu.
 
 ```bash
 python -m factory_control init
@@ -40,6 +41,18 @@ python -m factory_control automation decide --run RUN-... --decision APPROVED --
 
 **Quan trọng:** phê duyệt một run không đồng nghĩa phê duyệt Quality Gate; gate vẫn cần hồ sơ bằng chứng riêng. Người dùng chưa cấu hình khóa API nào trong repository và chưa xác nhận chi phí.
 
+### Phục hồi worker bị ngắt (bản 1.3.2)
+
+Nếu tiến trình dừng giữa tác vụ, run có thể kẹt ở trạng thái `RUNNING`. **Không tự gọi lại API** vì lời gọi trước đó có thể đã thành công và phát sinh chi phí. Hãy xác minh tiến trình cũ đã dừng và run không được xử lý bởi worker khác, sau đó mới thực hiện:
+
+```bash
+python -m factory_control automation recover --run RUN-... --stale-seconds 600 --confirm-worker-stopped
+# Lệnh trên CHỈ chuyển RUNNING cũ sang FAILED; không tự sinh nội dung.
+python -m factory_control automation retry --run RUN-...
+```
+
+Giới hạn tối thiểu là 300 giây; mặc định 600 giây. `retry` chỉ xử lý bước chưa được ghi thành công và kiểm tra tính toàn vẹn các kết quả đã lưu. Không nên phục hồi thủ công khi worker khác vẫn có thể chạy cùng tác vụ.
+
 ## GitHub Issues → hàng đợi local (chỉ đọc)
 
 Trên repository thuộc `lengocsang-1991`, chủ tài khoản có thể tạo Issue và tự gắn nhãn **`factory:ready`**. Nội dung issue bị coi là dữ liệu không đáng tin cậy, không được chuyển thành lệnh hệ thống hoặc tool action. Intake chỉ nhận issue được **chính `lengocsang-1991` tạo**, không nhận PR, issue người khác hoặc repository ngoài tài khoản này.
@@ -49,7 +62,7 @@ python -m factory_control automation intake --project DEMO-01 --enqueue --provid
 # Sau khi đánh giá chi phí có thể dùng --provider openai khi lập hàng đợi, worker phải có --confirm-cost
 ```
 
-Intake không sửa hoặc bình luận trên GitHub; chỉ ghi tác vụ local. Tác vụ được tạo theo mã idempotent; lần nhập lặp không tạo thêm run cho cùng task.
+Intake không sửa hoặc bình luận trên GitHub; chỉ ghi tác vụ local. Tác vụ được tạo theo mã idempotent; lần nhập lặp không tạo thêm run cho cùng task. Bản 1.3.2 đọc nhiều trang kết quả (tối đa 3 trang × 100 issue), báo lỗi khi vượt giới hạn thay vì âm thầm bỏ sót.
 
 ## Vận hành thường trực
 
@@ -75,4 +88,4 @@ python -m factory_control worker --provider gemini --confirm-cost
 
 Mọi lời gọi AI có thể phát sinh chi phí, phụ thuộc chính sách của nhà cung cấp. **Chưa kiểm tra API thật hoặc quyền dùng model trên tài khoản Google AI Studio của người dùng**.
 
-Nếu đã tự chạy bản thử nghiệm 1.3.0 bằng SQLite, hãy sao lưu trước khi nâng cấp; 1.3.1 không cung cấp migration tự động cho database thử nghiệm cũ chứa bảng `automation_runs`. Không chuyển database thử nghiệm thành production.
+Nếu đã tự chạy bản thử nghiệm 1.3.0 bằng SQLite, hãy sao lưu trước khi nâng cấp; không cung cấp migration tự động cho database thử nghiệm cũ chứa bảng `automation_runs`. Không chuyển database thử nghiệm thành production.

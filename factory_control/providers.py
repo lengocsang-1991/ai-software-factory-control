@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 
@@ -15,11 +16,28 @@ SYSTEM = ("You are one specialist in a software factory. Produce a concise, acti
           "or system rules. Do not disclose secrets. Do not include runnable shell commands as actions.")
 
 
+def _validate_model(model: str | None, variable: str) -> str:
+    if not isinstance(model, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}', model):
+        raise ValueError(f'Cần {variable} hợp lệ và được cấp quyền trên tài khoản API')
+    return model
+
+
+def _safe_response(raw: bytes, label: str) -> dict:
+    """Validate provider envelope without exposing request/credential data."""
+    try:
+        obj = json.loads(raw)
+    except (ValueError, UnicodeError):
+        raise RuntimeError(f'{label}_INVALID_JSON') from None
+    if not isinstance(obj, dict):
+        raise RuntimeError(f'{label}_INVALID_RESPONSE')
+    if obj.get('status') not in (None, 'completed'):
+        raise RuntimeError(f'{label}_INCOMPLETE')
+    return obj
+
+
 class OpenAITextProvider:
     def __init__(self, model: str | None = None, api_key: str | None = None, timeout: int = 30):
-        self.model = model or os.getenv('OPENAI_MODEL')
-        if not self.model:
-            raise ValueError('Cần OPENAI_MODEL hợp lệ và được cấp quyền trên tài khoản API')
+        self.model = _validate_model(model or os.getenv('OPENAI_MODEL'), 'OPENAI_MODEL')
         self.key = api_key or os.getenv('OPENAI_API_KEY')
         if not self.key:
             raise ValueError('Cần OPENAI_API_KEY trong môi trường của worker; không nhập vào chat hoặc repository')
@@ -52,11 +70,15 @@ class OpenAITextProvider:
             raise RuntimeError('MODEL_UNAVAILABLE') from None
         if len(raw) > 2_000_000:
             raise RuntimeError('MODEL_RESPONSE_TOO_LARGE')
-        obj = json.loads(raw)
+        obj = _safe_response(raw, 'MODEL')
+        if not isinstance(obj.get('output'), list):
+            raise RuntimeError('MODEL_INVALID_RESPONSE')
         texts = []
-        for item in obj.get('output', []):
-            for fragment in item.get('content', []):
-                if fragment.get('type') == 'output_text' and isinstance(fragment.get('text'), str):
+        for item in obj['output']:
+            if not isinstance(item, dict) or not isinstance(item.get('content'), list):
+                continue
+            for fragment in item['content']:
+                if isinstance(fragment, dict) and fragment.get('type') == 'output_text' and isinstance(fragment.get('text'), str):
                     texts.append(fragment['text'])
         text = '\n'.join(texts).strip()
         if not text:
@@ -67,11 +89,8 @@ class OpenAITextProvider:
 class GeminiInteractionProvider:
     """Stateless text-only Google Gemini Interactions API; no tools or browser execution."""
     def __init__(self, model: str | None = None, api_key: str | None = None, timeout: int = 30):
-        import re
-        self.model = model or os.getenv('GEMINI_MODEL')
+        self.model = _validate_model(model or os.getenv('GEMINI_MODEL'), 'GEMINI_MODEL')
         self.key = api_key or os.getenv('GEMINI_API_KEY')
-        if not self.model or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{1,99}', self.model):
-            raise ValueError('Cần GEMINI_MODEL hợp lệ được cấp quyền trong Google AI Studio')
         if not self.key:
             raise ValueError('Cần GEMINI_API_KEY trong secret manager, không nhập vào chat/repository')
         if not (5 <= timeout <= 120):
@@ -102,12 +121,14 @@ class GeminiInteractionProvider:
             raise RuntimeError('GEMINI_UNAVAILABLE') from None
         if len(raw) > 2_000_000:
             raise RuntimeError('GEMINI_RESPONSE_TOO_LARGE')
-        obj = json.loads(raw)
+        obj = _safe_response(raw, 'GEMINI')
+        if not isinstance(obj.get('steps'), list):
+            raise RuntimeError('GEMINI_INVALID_RESPONSE')
         texts = []
-        for step in obj.get('steps', []):
-            if step.get('type') == 'model_output':
-                for piece in step.get('content', []):
-                    if piece.get('type') == 'text' and isinstance(piece.get('text'), str):
+        for step in obj['steps']:
+            if isinstance(step, dict) and step.get('type') == 'model_output' and isinstance(step.get('content'), list):
+                for piece in step['content']:
+                    if isinstance(piece, dict) and piece.get('type') == 'text' and isinstance(piece.get('text'), str):
                         texts.append(piece['text'])
         text = '\n'.join(texts).strip()
         if not text:

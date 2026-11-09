@@ -7,10 +7,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-import sqlite3
 import uuid
 from dataclasses import dataclass
-from pathlib import Path
+from datetime import datetime, timezone
 from typing import Protocol
 
 from .store import FactoryStore, checked_id, required, utc_now
@@ -160,11 +159,69 @@ class AutomationEngine:
             self.db.rollback()
             raise
 
+    def _verify_committed_outputs(self, run: dict) -> None:
+        """Reject corrupt/resumed results before they can influence later roles.
+
+        Database hashes are not signatures and do not prove external provenance.
+        """
+        roles = RECIPES[run['recipe']]
+        rows = self.db.execute(
+            'SELECT step_no,role,text,sha256,simulated FROM automation_outputs '
+            'WHERE run_id=? ORDER BY step_no', (run['id'],)
+        ).fetchall()
+        if len(rows) != run['current_step']:
+            raise ValueError('OUTPUT_INTEGRITY_FAILED')
+        for step, row in enumerate(rows, 1):
+            if (step > len(roles) or row['step_no'] != step or row['role'] != roles[step - 1]
+                    or hashlib.sha256(row['text'].encode('utf-8')).hexdigest() != row['sha256']
+                    or bool(row['simulated']) != (run['provider'] == 'simulation')):
+                raise ValueError('OUTPUT_INTEGRITY_FAILED')
+
+    def recover_stale(self, run_id: str, *, stale_seconds: int = 600) -> dict:
+        """Manual recovery of an abandoned worker; never retries or calls an API.
+
+        The previous API call could have succeeded before the crash. The
+        operator must first confirm that the old worker is no longer running.
+        """
+        if stale_seconds < 300:
+            raise ValueError('Cần chờ ít nhất 300 giây để tránh thu hồi worker còn chạy')
+        self.db.execute('BEGIN IMMEDIATE')
+        try:
+            run = self.get(run_id, with_outputs=False)
+            if run['state'] != 'RUNNING':
+                raise ValueError('Chỉ thu hồi tác vụ RUNNING bị gián đoạn')
+            updated = datetime.fromisoformat(run['updated_at'])
+            if updated.tzinfo is None:
+                raise ValueError('INVALID_RUN_TIMESTAMP')
+            age = (datetime.now(timezone.utc) - updated).total_seconds()
+            if age < stale_seconds:
+                raise ValueError('Run còn mới; không được thu hồi worker đang hoạt động')
+            self.db.execute(
+                "UPDATE automation_runs SET state='FAILED',error_code='INTERRUPTED_UNCERTAIN',updated_at=? "
+                "WHERE id=? AND state='RUNNING'", (utc_now(), run_id)
+            )
+            self.store._event(run['project_id'], 'AUTOMATION_RECOVERED_MANUALLY',
+                              {'run_id': run_id, 'age_seconds': int(age), 'result': 'FAILED'})
+            self.db.commit()
+        except Exception:
+            self.db.rollback()
+            raise
+        return self.get(run_id, with_outputs=False)
+
     def process(self, run_id: str, provider: AgentProvider) -> dict:
         run = self.get(run_id, with_outputs=False)
         if run['state'] != 'RUNNING':
             raise ValueError('Run chưa được claim hoặc không trong trạng thái RUNNING')
         roles = RECIPES[run['recipe']]
+        try:
+            self._verify_committed_outputs(run)
+        except ValueError:
+            with self.db:
+                self.db.execute("UPDATE automation_runs SET state='FAILED',error_code='OUTPUT_INTEGRITY_FAILED',updated_at=? WHERE id=?",
+                                (utc_now(), run_id))
+                self.store._event(run['project_id'], 'AUTOMATION_FAILED',
+                                  {'run_id': run_id, 'error_code': 'OUTPUT_INTEGRITY_FAILED'})
+            return self.get(run_id, with_outputs=False)
         for idx in range(run['current_step'], len(roles)):
             role = roles[idx]
             history = self.db.execute('''SELECT role,text FROM automation_outputs
@@ -176,6 +233,11 @@ class AutomationEngine:
                     raise ValueError('EMPTY_GENERATION')
                 if len(result.text) > 12000:
                     raise ValueError('OUTPUT_LIMIT_EXCEEDED')
+                if not isinstance(result.model, str) or not result.model.strip() or len(result.model) > 100:
+                    raise ValueError('INVALID_MODEL')
+                # A mock must never silently turn into an approvable model run.
+                if bool(result.simulated) != (run['provider'] == 'simulation'):
+                    raise ValueError('PROVIDER_OUTPUT_MISMATCH')
                 content_hash = hashlib.sha256(result.text.encode('utf-8')).hexdigest()
                 with self.db:
                     self.db.execute('''INSERT INTO automation_outputs
@@ -230,9 +292,10 @@ class AutomationEngine:
             raise ValueError('Ghi chú quá dài')
         if len(run['outputs']) != run['steps_total']:
             raise ValueError('Thiếu đầu ra Agent')
-        for output in run['outputs']:
-            if hashlib.sha256(output['text'].encode('utf-8')).hexdigest() != output['sha256'] or output['simulated']:
-                raise ValueError('Đầu ra Agent không nguyên vẹn hoặc mô phỏng')
+        try:
+            self._verify_committed_outputs(run)
+        except ValueError:
+            raise ValueError('Đầu ra Agent không nguyên vẹn hoặc mô phỏng') from None
         with self.db:
             self.db.execute('''UPDATE automation_runs SET state=?,approved_by=?,approval_note=?,updated_at=? WHERE id=?''',
                             (decision, actor, note, utc_now(), run_id))

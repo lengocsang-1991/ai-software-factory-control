@@ -24,8 +24,10 @@ def check(account, repository=None, config_path=CONFIG):
         parts = repository.split('/')
         if len(parts) != 2 or parts[0] != target or not parts[1] or not all(c.isalnum() or c in '._-' for c in parts[1]):
             raise ValueError(f'Repository phải thuộc {target} và ở dạng {target}/repo.')
-    return {'target_owner': target, 'authenticated_login': account, 'repository': repository, 'account_verified': True,
-            'publishing_authorized': False, 'note': 'Chỉ kiểm tra owner/account; KHÔNG cấp quyền push hoặc tạo repository.'}
+    return {'target_owner': target, 'supplied_login': account, 'repository': repository,
+            'account_matches_target': True, 'account_verified': False,
+            'publishing_authorized': False,
+            'note': 'Chỉ so khớp tên do bên gọi đưa vào; KHÔNG xác minh OAuth hoặc cấp quyền push.'}
 
 
 def main(argv=None):
