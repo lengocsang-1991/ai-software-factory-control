@@ -1,9 +1,14 @@
-# Quy tắc dành cho AI coding agents
+# Agent hướng dẫn dành cho công cụ hỗ trợ lập trình
 
-1. Không giả định 16 vai trò Agent là 16 tiến trình đang chạy. Phải nêu rõ tool đã kết nối và hành động thực tế.
-2. Không commit token, mật khẩu, OTP, dữ liệu thật, database cục bộ hay chứng cứ nghiệp vụ lên GitHub.
-3. Chỉ sửa mã theo phạm vi Issue, trên nhánh riêng, qua Pull Request và phê duyệt; không tự merge hay deploy.
-4. Không giả kết quả test, code review, CI, audit hoặc quyết định Quality Gate.
-5. Với bản mã nguồn Python 1.2.0, chạy `python scripts/validate_factory.py` và `python -m unittest discover -s tests -v`.
-6. Không public dashboard local; hệ thống chưa có authentication và RBAC.
-7. Nếu thiếu thông tin hoặc quyền thực thi, báo chính xác `NOT_VERIFIED` hoặc `BLOCKED`.
+Áp dụng cho toàn repository:
+
+1. Không ghi token, mật khẩu, OTP, khóa, dữ liệu khách hàng hoặc bằng chứng nghiệp vụ vào code, commit hay log.
+2. Tránh giả định Agent đang chạy. Các thư mục `AGENTS/*` chỉ là đặc tả thiết kế.
+3. Mọi thay đổi code phải đi qua nhánh riêng, PR, kiểm thử và phê duyệt; không tự merge hay tự deploy.
+4. Chỉ thay đổi những phần thuộc phạm vi nhiệm vụ. Giữ hoạt động tương thích Python 3.11+.
+5. Chạy `python scripts/validate_factory.py` và `python -m unittest discover -s tests -v` trước khi đề nghị review.
+6. Không sửa trạng thái `APPROVED`/`DONE` để né Quality Gate. Không dùng dữ liệu thử làm bằng chứng thực tế.
+7. Không triển khai hệ thống ra Internet: dashboard không có đăng nhập và chỉ hỗ trợ localhost.
+8. Nếu thiếu công cụ hoặc chưa xác minh GitHub identity, ghi trạng thái `NOT_VERIFIED` và báo rõ giới hạn.
+
+Xem `DOCUMENTATION/architecture/ARCHITECTURE.md` và `SECURITY.md`.

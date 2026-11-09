@@ -1,0 +1,18 @@
+{
+  "target_owner": "lengocsang-1991",
+  "repository": "lengocsang-1991/ai-software-factory-control",
+  "repository_visibility": "public",
+  "repository_status": "EXISTS_VERIFIED_2026-11-09",
+  "github_connector": {
+    "status": "CONNECTED_VERIFIED_2026-11-09",
+    "authenticated_login_observed": "lengocsang-1991",
+    "target_owner_connected": true
+  },
+  "policy": {
+    "allow_other_account_repositories": false,
+    "main_branch_direct_write": false,
+    "require_verified_target_account": true,
+    "require_review_and_evidence_for_merge": true,
+    "production_deploy_allowed": false
+  }
+}

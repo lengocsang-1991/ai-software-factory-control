@@ -1,12 +1,18 @@
-## Mục tiêu
+## Mục tiêu / Issue liên quan
 
-## Nội dung thay đổi
+## Thay đổi chính
 
-## Kết quả kiểm thử
-- [ ] Kiểm thử cục bộ đã chạy
-- [ ] CI GitHub đã chạy thành công (nếu có, kèm đường dẫn)
-- [ ] Không đưa secrets hoặc dữ liệu cá nhân vào mã
+## Bằng chứng kiểm thử
+- [ ] `python scripts/validate_factory.py`
+- [ ] `python -m unittest discover -s tests -v`
+- [ ] CI GitHub Actions đã hoàn thành (đính kèm đường dẫn sau khi chạy)
 
-## Rủi ro và phương án rollback
+## Kiểm tra an toàn
+- [ ] Không có secrets, dữ liệu cá nhân hoặc SQLite state
+- [ ] Không làm giảm yêu cầu chứng cứ/phê duyệt của Quality Gate
+- [ ] Đã cập nhật tài liệu khi hành vi hoặc cấu hình thay đổi
+- [ ] Không yêu cầu deploy production tự động
 
-## Người phê duyệt
+## Rủi ro / Rollback
+
+## Phê duyệt cần thiết

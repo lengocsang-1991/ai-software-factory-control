@@ -1,0 +1,41 @@
+name: CI - Validate Factory
+
+on:
+  push:
+    branches: [main, 'feat/**', 'fix/**', 'docs/**', 'chore/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Compile Python source
+        run: python -m compileall -q factory_control scripts tests
+      - name: Validate governance structure
+        run: python scripts/validate_factory.py
+      - name: Guard GitHub destination
+        run: python scripts/check_github_target.py --authenticated-login lengocsang-1991 --repository lengocsang-1991/ai-software-factory-control
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v

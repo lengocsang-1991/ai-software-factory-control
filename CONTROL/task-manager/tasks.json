@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "tasks": [],
+  "valid_statuses": [
+    "BACKLOG",
+    "READY",
+    "IN_PROGRESS",
+    "BLOCKED",
+    "TESTING",
+    "AUDITING",
+    "WAITING_APPROVAL",
+    "DONE",
+    "FAILED",
+    "NOT_VERIFIED"
+  ]
+}
