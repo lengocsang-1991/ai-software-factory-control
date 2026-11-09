@@ -69,7 +69,7 @@ def parser():
     enqueue.add_argument("--project", required=True)
     enqueue.add_argument("--objective", required=True)
     enqueue.add_argument("--recipe", default="discovery", choices=sorted(RECIPES))
-    enqueue.add_argument("--provider", default="simulation", choices=("simulation", "openai"))
+    enqueue.add_argument("--provider", default="simulation", choices=("simulation", "openai", "gemini"))
     enqueue.add_argument("--task-id")
     li = sa.add_parser("list"); li.add_argument("--project", required=True)
     sh = sa.add_parser("show"); sh.add_argument("--run", required=True)
@@ -78,13 +78,13 @@ def parser():
     intake = sa.add_parser("intake", help="Chỉ đọc issue factory:ready do chủ repo tạo; nhập vào SQLite local")
     intake.add_argument("--project", required=True)
     intake.add_argument("--enqueue", action="store_true", help="Đưa issue vào hàng đợi Agent theo discovery")
-    intake.add_argument("--provider", default="simulation", choices=("simulation", "openai"))
+    intake.add_argument("--provider", default="simulation", choices=("simulation", "openai", "gemini"))
     decide = sa.add_parser("decide"); decide.add_argument("--run", required=True)
     decide.add_argument("--decision", choices=("APPROVED", "REJECTED"), required=True)
     decide.add_argument("--actor", required=True); decide.add_argument("--note", default="")
 
     worker = cmds.add_parser("worker", help="Thực thi tuần tự các Agent; mặc định chỉ mô phỏng")
-    worker.add_argument("--provider", default="simulation", choices=("simulation", "openai"))
+    worker.add_argument("--provider", default="simulation", choices=("simulation", "openai", "gemini"))
     worker.add_argument("--confirm-cost", action="store_true", help="Bắt buộc khi dùng API OpenAI tính phí")
     worker.add_argument("--loop", action="store_true", help="Worker chạy liên tục ở máy chủ riêng")
     worker.add_argument("--interval", type=int, default=30, help="Giây giữa các lần kiểm tra, 2-3600")
@@ -126,11 +126,15 @@ def dispatch(store: FactoryStore, args):
         import time
         if not 2 <= args.interval <= 3600:
             raise ValueError("Interval phải từ 2 đến 3600 giây")
-        if args.provider == "openai":
+        if args.provider != "simulation":
             if not args.confirm_cost:
-                raise ValueError("Worker OpenAI cần --confirm-cost (lời gọi API có thể phát sinh chi phí)")
-            from .providers import OpenAITextProvider
-            provider = OpenAITextProvider()
+                raise ValueError("Worker AI thật cần --confirm-cost (lời gọi API có thể phát sinh chi phí)")
+            if args.provider == "openai":
+                from .providers import OpenAITextProvider
+                provider = OpenAITextProvider()
+            else:
+                from .providers import GeminiInteractionProvider
+                provider = GeminiInteractionProvider()
         else:
             provider = SimulationProvider()
         engine = AutomationEngine(store)

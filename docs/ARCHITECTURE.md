@@ -1,4 +1,4 @@
-# Kiến trúc AI Software Factory 1.3.0
+# Kiến trúc AI Software Factory 1.3.1
 
 ## Hiện trạng
 
@@ -6,7 +6,7 @@ ChatGPT điều hành các nhiệm vụ trong phiên trò chuyện có cấp quy
 
 - Control plane: dự án, task, Quality Gate, hồ sơ bằng chứng, audit event trong SQLite.
 - Execution plane (new): bảng automation_runs/automation_outputs, worker polling có claim atomic, retry theo bước, recipe điều phối 16 vai trò.
-- Provider plane: mô phỏng hoặc OpenAI Responses API opt-in; không được cấp công cụ shell/git/deploy.
+- Provider plane: mô phỏng, OpenAI Responses API hoặc Gemini Interactions API opt-in; không được cấp công cụ shell/git/deploy.
 - GitHub intake: đọc issue từ repo do chủ sở hữu tạo và gắn nhãn factory:ready, ghi task và enqueue local.
 - Human approval: không có quyền quyết định Quality Gate bằng kết quả mô hình; `automation decide` chỉ đánh dấu review artifact.
 - CI: kiểm thử offline không truy cập API thật hoặc production.

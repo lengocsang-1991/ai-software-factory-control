@@ -25,8 +25,8 @@
     },
     {
       "service": "Google AI Studio",
-      "status": "NOT_VERIFIED",
-      "note": "Chưa có tích hợp/ủy quyền được xác minh"
+      "status": "ADAPTER_IMPLEMENTED_NOT_CONNECTED",
+      "note": "Có Gemini Interactions API adapter chạy text-only (unit test mock); chưa có GEMINI_API_KEY/GEMINI_MODEL, chưa test lời gọi thật."
     },
     {
       "service": "Google Cloud",
@@ -52,6 +52,11 @@
       "service": "MCP",
       "status": "DESIGN_ONLY",
       "note": "Sẵn sàng thiết kế tích hợp khi được cấp endpoint và quyền"
+    },
+    {
+      "service": "OpenAI API",
+      "status": "ADAPTER_IMPLEMENTED_NOT_CONNECTED",
+      "note": "Có OpenAI Responses API adapter chạy text-only (unit test mock); chưa có OPENAI_API_KEY/OPENAI_MODEL."
     }
   ]
 }

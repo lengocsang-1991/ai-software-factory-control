@@ -1,6 +1,6 @@
 # AI SOFTWARE FACTORY — CENTRAL CONTROL
 
-> **v1.3.0 · Local-first automation runtime · Python 3.11+**
+> **v1.3.1 · Local-first automation runtime · Python 3.11+**
 >
 > **Tình trạng:** MVP có 16 vai trò Agent tạo tài liệu đánh giá tuần tự khi kết nối provider; **chưa phải hệ thống tự triển khai phần mềm hoàn chỉnh.**
 
@@ -11,7 +11,7 @@
 - Quản lý dự án, nhiệm vụ và 8 Quality Gate bằng SQLite cục bộ.
 - 16 vai trò AI Agent, 3 recipe phối hợp tạo báo cáo và bản dự thảo.
 - Hàng đợi bền vững, worker nhận việc, ghi kết quả từng bước, retry lỗi, mã SHA-256 và yêu cầu phê duyệt trước khi công nhận kết quả.
-- Chế độ mô phỏng (không tính phí, đầu ra dán nhãn `SIMULATED`) và chế độ AI thật qua OpenAI Responses API khi có API key và xác nhận chi phí.
+- Chế độ mô phỏng (không tính phí, đầu ra dán nhãn `SIMULATED`) và chế độ AI thật qua OpenAI Responses API **hoặc Google Gemini Interactions API** khi có API key, model và xác nhận chi phí.
 - Nhận có chọn lọc các GitHub Issue của chủ repo, có nhãn `factory:ready` — **chỉ đọc GitHub**, không tự thay đổi repo.
 - Bảng điều khiển chỉ đọc tại `127.0.0.1` và GitHub Actions kiểm thử với Python 3.11/3.12/3.13.
 

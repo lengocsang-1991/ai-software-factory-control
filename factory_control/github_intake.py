@@ -66,7 +66,7 @@ def ingest(store: FactoryStore, project_id: str, *, enqueue: bool = False,
     repo = project.get('repository')
     if not repo:
         raise ValueError('Dự án chưa khai báo repository')
-    if provider not in ('simulation', 'openai'):
+    if provider not in ('simulation', 'openai', 'gemini'):
         raise ValueError('Provider không được hỗ trợ')
     accepted = get_approved_issues(repo, token=token)
     automation = AutomationEngine(store)

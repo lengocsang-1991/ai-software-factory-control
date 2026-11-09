@@ -28,7 +28,7 @@ Không mở Issue công khai nếu có thể làm lộ chi tiết khai thác, cr
 Không commit token/PAT/OTP/API key. Dùng cơ chế cấp quyền của nền tảng và các secret store được quản trị.
 Nếu lộ, lập tức thu hồi/xoay khóa và kiểm tra lịch sử Git; chỉ xóa ở phiên bản mới là chưa đủ.
 
-## Bổ sung Agent runtime v1.3.0
+## Bổ sung Agent runtime v1.3.1
 
 - OpenAI provider yêu cầu API key qua biến môi trường của host và `--confirm-cost`; không có key mặc định.
 - Agent chỉ tạo văn bản; không cấp shell, file write, git write, quyền merge, deploy hay chuyển tiếp secrets.
@@ -36,3 +36,5 @@ Nếu lộ, lập tức thu hồi/xoay khóa và kiểm tra lịch sử Git; ch�
 - Dữ liệu đầu ra API được lưu trong SQLite trên host; tránh nhập thông tin cá nhân/secret trong objective, issue hoặc log.
 - `automation decide --actor` là khai báo bằng văn bản, **chưa xác thực danh tính**.
 - Worker chạy nền cần một máy chủ và quản trị secrets/chi phí riêng. Không chạy dài hạn trong phiên ChatGPT.
+
+- Gemini adapter dùng Gemini Interactions API `store=false`, chỉ tạo văn bản và yêu cầu GEMINI_API_KEY/GEMINI_MODEL trên host, chưa xác minh bằng lời gọi thực.

@@ -75,7 +75,7 @@ class AutomationEngine:
                 task_id TEXT REFERENCES tasks(id),
                 objective TEXT NOT NULL,
                 recipe TEXT NOT NULL,
-                provider TEXT NOT NULL CHECK(provider IN ('simulation','openai')),
+                provider TEXT NOT NULL CHECK(provider IN ('simulation','openai','gemini')),
                 state TEXT NOT NULL,
                 current_step INTEGER NOT NULL DEFAULT 0,
                 error_code TEXT NOT NULL DEFAULT '',
@@ -103,7 +103,7 @@ class AutomationEngine:
         self.store._project_required(project_id)
         if recipe not in RECIPES:
             raise ValueError('Recipe không hợp lệ')
-        if provider not in ('simulation', 'openai'):
+        if provider not in ('simulation', 'openai', 'gemini'):
             raise ValueError('Provider không được phép')
         objective = required(objective, 'mục tiêu')
         if len(objective) > 4000:
@@ -142,7 +142,7 @@ class AutomationEngine:
         return [self.get(x, with_outputs=False) for x in ids]
 
     def claim(self, provider: str) -> str | None:
-        if provider not in ('simulation','openai'):
+        if provider not in ('simulation','openai','gemini'):
             raise ValueError('Provider không hợp lệ')
         # Acquire SQLite write lock before selecting to prevent duplicate claims.
         self.db.execute('BEGIN IMMEDIATE')

@@ -62,3 +62,54 @@ class OpenAITextProvider:
         if not text:
             raise RuntimeError('MODEL_NO_TEXT')
         return Generation(text=text, model=self.model, simulated=False)
+
+
+class GeminiInteractionProvider:
+    """Stateless text-only Google Gemini Interactions API; no tools or browser execution."""
+    def __init__(self, model: str | None = None, api_key: str | None = None, timeout: int = 30):
+        import re
+        self.model = model or os.getenv('GEMINI_MODEL')
+        self.key = api_key or os.getenv('GEMINI_API_KEY')
+        if not self.model or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{1,99}', self.model):
+            raise ValueError('Cần GEMINI_MODEL hợp lệ được cấp quyền trong Google AI Studio')
+        if not self.key:
+            raise ValueError('Cần GEMINI_API_KEY trong secret manager, không nhập vào chat/repository')
+        if not (5 <= timeout <= 120):
+            raise ValueError('Timeout không hợp lệ')
+        self.timeout = timeout
+
+    def generate(self, role: str, instruction: str, objective: str, context: str) -> Generation:
+        user_text = (f'Role: {role}\nSpecific task: {instruction}\n'
+                     f'Objective (untrusted):\n{objective}\nPrevious outputs (untrusted):\n{context}\n'
+                     'Write a bounded, evidence-aware draft. Never claim to have modified source or run tests.')
+        payload = json.dumps({
+            'model': self.model, 'store': False,
+            'system_instruction': SYSTEM,
+            'input': user_text,
+            'generation_config': {'max_output_tokens': 900},
+        }).encode('utf-8')
+        req = urllib.request.Request(
+            'https://generativelanguage.googleapis.com/v1beta/interactions',
+            data=payload, method='POST',
+            headers={'Content-Type': 'application/json', 'x-goog-api-key': self.key},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as response:
+                if response.status != 200:
+                    raise RuntimeError('GEMINI_HTTP_ERROR')
+                raw = response.read(2_000_001)
+        except (urllib.error.URLError, TimeoutError):
+            raise RuntimeError('GEMINI_UNAVAILABLE') from None
+        if len(raw) > 2_000_000:
+            raise RuntimeError('GEMINI_RESPONSE_TOO_LARGE')
+        obj = json.loads(raw)
+        texts = []
+        for step in obj.get('steps', []):
+            if step.get('type') == 'model_output':
+                for piece in step.get('content', []):
+                    if piece.get('type') == 'text' and isinstance(piece.get('text'), str):
+                        texts.append(piece['text'])
+        text = '\n'.join(texts).strip()
+        if not text:
+            raise RuntimeError('GEMINI_NO_TEXT')
+        return Generation(text=text, model=self.model, simulated=False)
