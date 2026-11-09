@@ -1,13 +1,22 @@
-# Đồng bộ mã nguồn 1.2.0
+# Đồng bộ mã nguồn AI Software Factory 1.2.0
 
-Repository đã được khởi tạo với bộ tài liệu và cấu hình cộng tác GitHub. **Chưa coi đây là bản đồng bộ đầy đủ của 98 tệp nguồn.**
+## Trạng thái được xác minh ngày 09/11/2026
 
-## Quy trình nhập mã từ gói ZIP 1.2.0 được cung cấp trong cuộc trò chuyện
+- Đã đưa 98 tệp trong bộ khung cục bộ vào nhánh `feat/factory-control-v1.2` cùng 12 tệp tài liệu/quy tắc GitHub đã tạo ở bước khởi tạo.
+- Commit mã nguồn: `1dba7429ca22d535ce7e93080be5a8fb0274170e`.
+- Mã nguồn `factory_control/store.py` và workflow `.github/workflows/ci.yml` đã được đọc lại trực tiếp từ GitHub.
+- GitHub Actions run **42598659341** đã **success** ở Python 3.11, 3.12, 3.13.
+- Pull Request **#1** đang ở trạng thái **Draft**; **chưa merge vào main**; chưa triển khai production.
 
-1. Giải nén gói dự án chính thức; rà soát toàn bộ secrets và dữ liệu cá nhân trước khi nhập.
-2. Kiểm tra tại thư mục gốc: `python scripts/validate_factory.py`, `python -m unittest discover -s tests -v`.
-3. Trên nhánh `feat/factory-control-v1.2`, đưa mã nguồn Python, tests, cấu hình, 16 Agent, workflows và docs vào.
-4. Đảm bảo GitHub Actions chạy kiểm thử trên commit, không tin vào kết quả giả định.
-5. Mở Pull Request để review và phê duyệt trước merge.
+## Hướng dẫn kiểm chứng
 
-**Không** ghi đè nhánh main chưa có review, không triển khai production và không tải SQLite state lên GitHub.
+```bash
+python scripts/validate_factory.py
+python -m unittest discover -s tests -v
+```
+
+Theo dõi tại [Pull Request #1](https://github.com/lengocsang-1991/ai-software-factory-control/pull/1) và [CI Run #42598659341](https://github.com/lengocsang-1991/ai-software-factory-control/actions/runs/42598659341).
+
+## Bước kiểm soát còn lại
+
+Rà soát toàn bộ thay đổi, kiểm tra an toàn thông tin, thiết lập quy tắc bảo vệ nhánh main, lấy phê duyệt chính thức trước merge. Không coi MVP là production-ready hoặc hệ thống Agent đang tự chạy.
