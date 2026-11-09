@@ -1,11 +1,11 @@
-# Lộ trình
+# Roadmap (cập nhật 09/11/2026)
 
-| Mốc | Mục tiêu | Trạng thái |
+| Level | Điều kiện đạt | Hiện trạng |
 |---|---|---|
-| LEVEL 1 | Quản lý dự án, nhiệm vụ và gate trên máy cục bộ | MVP có kiểm thử |
-| LEVEL 2 | Đồng bộ GitHub, PR, CI và evidence trên commit | Đang triển khai |
-| LEVEL 3 | Agent runtime thực hiện nhiệm vụ được giao | Chưa thực hiện |
-| LEVEL 4 | Tự động hóa có kiểm toán độc lập | Chưa thực hiện |
-| LEVEL 5 | Nhiều dự án production với giám sát, chi phí và phân quyền | Chưa thực hiện |
+| 1 CONTROL | Dự án, nhiệm vụ, gate, audit | **MVP cục bộ có kiểm thử** |
+| 2 CONNECTED | GitHub đồng bộ, CI, tiếp nhận issue, AI provider có xác minh | **Một phần**: GitHub + CI thật, issue intake kiểm thử giả lập; AI provider chưa có key |
+| 3 EXECUTION | Sandbox tạo/sửa mã, chạy test, PR tự động có phê duyệt | **Chưa có** |
+| 4 VERIFIED AUTOMATION | CI + kiểm toán độc lập + IAM + policy engine | **Chưa có** |
+| 5 OPERATIONAL FACTORY | Hạ tầng 24/7, nhiều dự án, giám sát, quota, backup, deploy | **Chưa có** |
 
-**Ưu tiên:** Đồng bộ đủ nguồn, xác minh CI thật, bảo vệ nhánh main, sau đó thiết kế IAM và Agent orchestration.
+Ưu tiên thực hiện tiếp: cấu hình provider trên host → xác minh 1 run AI thật → thiết lập IAM/approval có danh tính → sandbox code runner → CI evidence → GitHub PR với write scope hạn chế → bảo vệ main → triển khai thử nghiệm rồi mới production.

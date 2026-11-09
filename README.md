@@ -1,86 +1,55 @@
 # AI SOFTWARE FACTORY — CENTRAL CONTROL
 
-> **v1.2.0 • Local-first MVP • Python 3.11+**
+> **v1.3.0 · Local-first automation runtime · Python 3.11+**
 >
-> Hệ thống điều hành quy trình phát triển phần mềm theo `MASTER PROMPT 2026`.
-> **16 vai trò Agent được định nghĩa**, nhưng **chưa có runtime Agent tự động**.
+> **Tình trạng:** MVP có 16 vai trò Agent tạo tài liệu đánh giá tuần tự khi kết nối provider; **chưa phải hệ thống tự triển khai phần mềm hoàn chỉnh.**
 
-**Repository chính thức:** [lengocsang-1991/ai-software-factory-control](https://github.com/lengocsang-1991/ai-software-factory-control)
+**GitHub:** [lengocsang-1991/ai-software-factory-control](https://github.com/lengocsang-1991/ai-software-factory-control)
 
-## Mục tiêu
+## Thành phần đang hoạt động
 
-Trung tâm quản lý nhiều dự án, có dấu vết bằng chứng, chuẩn hóa 8 giai đoạn và 8 Quality Gate.
-Mọi hoạt động ghi trên GitHub, hợp nhất mã, triển khai production, thay đổi quyền hoặc phát sinh chi phí
-phải có ủy quyền phù hợp. Không khẳng định Agent đang hoạt động khi chưa triển khai.
+- Quản lý dự án, nhiệm vụ và 8 Quality Gate bằng SQLite cục bộ.
+- 16 vai trò AI Agent, 3 recipe phối hợp tạo báo cáo và bản dự thảo.
+- Hàng đợi bền vững, worker nhận việc, ghi kết quả từng bước, retry lỗi, mã SHA-256 và yêu cầu phê duyệt trước khi công nhận kết quả.
+- Chế độ mô phỏng (không tính phí, đầu ra dán nhãn `SIMULATED`) và chế độ AI thật qua OpenAI Responses API khi có API key và xác nhận chi phí.
+- Nhận có chọn lọc các GitHub Issue của chủ repo, có nhãn `factory:ready` — **chỉ đọc GitHub**, không tự thay đổi repo.
+- Bảng điều khiển chỉ đọc tại `127.0.0.1` và GitHub Actions kiểm thử với Python 3.11/3.12/3.13.
 
 ```mermaid
 flowchart LR
-    A[Người điều hành] --> B[Central Control]
-    B --> C[Quản lý dự án & nhiệm vụ]
-    B --> D[Quality Gate & bằng chứng]
-    B --> E[16 đặc tả Agent]
-    C --> F[(SQLite cục bộ)]
-    D --> F
-    E -. runtime chưa triển khai .-> G[Execution adapters]
-    B --> H[GitHub qua tích hợp có cấp quyền]
+    U[Chủ dự án] --> I[CLI / GitHub Issue intake]
+    I --> Q[(SQLite Queue)]
+    Q --> W[Worker]
+    W --> A[16 vai trò Agent - text only]
+    A --> E[(Bằng chứng/đầu ra + SHA256)]
+    E --> G{Human approval}
+    G -->|Approved| R[Approved review artifact]
+    G -->|Rejected| B[Return to backlog]
+    R -. riêng biệt .-> QG[8 Quality Gates]
 ```
 
-## Chạy nhanh
-
-Không yêu cầu token GitHub hay thư viện Python bên thứ ba để vận hành **MVP cục bộ**.
+## Khởi động thử cục bộ
 
 ```bash
 python -m factory_control init
-python -m factory_control project add --id DEMO-01 --name "Dự án demo" --owner "Operator"
-python -m factory_control task add --id TASK-01 --project DEMO-01 --title "Product Brief" --owner "BA"
-python -m factory_control task list --project DEMO-01
-python -m factory_control gate list --project DEMO-01
-python -m factory_control serve --port 8765
+python -m factory_control project add --id DEMO-01 --name "Demo" --owner operator --repository lengocsang-1991/ai-software-factory-control
+python -m factory_control automation enqueue --project DEMO-01 --objective "Lập SRS sản phẩm thử nghiệm" --recipe discovery
+python -m factory_control worker
+python -m factory_control automation list --project DEMO-01
 ```
 
-Dashboard **chỉ đọc**, tại <http://127.0.0.1:8765/> trên chính máy chạy chương trình.
-Không sử dụng mạng public: phiên bản này chưa hỗ trợ đăng nhập và RBAC.
+**Đây là mô phỏng**, chỉ dùng để kiểm tra điều phối. Để dùng API thật, tham khảo [Hướng dẫn Agent Automation](docs/AUTOMATION.md), cấu hình khóa từ secret manager, chạy worker với `--provider openai --confirm-cost`. Không đưa khóa vào repo/chat.
 
-## Kiểm tra chất lượng
+## Kiểm tra
 
 ```bash
 python scripts/validate_factory.py
-python -m unittest discover -s tests -v
 python scripts/check_github_target.py --authenticated-login lengocsang-1991 --repository lengocsang-1991/ai-software-factory-control
+python -m unittest discover -s tests -v
 ```
 
-Bộ kiểm tra tài khoản chỉ so khớp dữ liệu đầu vào, **không thay thế xác thực thật với GitHub**.
-CI GitHub Actions chạy kiểm tra cú pháp, cấu trúc và unit test khi có push/PR.
+## Giới hạn
 
-## Kiến trúc thư mục
+Agent không có quyền gọi shell, chỉnh sửa mã nguồn, tạo/merge PR hoặc deploy. Phê duyệt local chưa được xác thực danh tính. Worker chưa được cài lên máy chủ chạy liên tục. Cần tích hợp thực thi mã có sandbox, IAM/RBAC, backup và kiểm tra bảo mật trước khi được coi là production-ready.
 
-| Đường dẫn | Chức năng |
-|---|---|
-| `factory_control/` | CLI, SQLite store, dashboard local chỉ đọc |
-| `CONTROL/`, `WORKFLOWS/` | Trạng thái, nhiệm vụ, quy trình 8 giai đoạn |
-| `AGENTS/` | 16 định nghĩa vai trò Agent; chưa có runtime |
-| `QUALITY/`, `SECURITY/` | Quality Gate, bằng chứng, kiểm toán, chính sách |
-| `PROJECTS/`, `REPORTS/`, `DOCUMENTATION/` | Mẫu đặc tả, báo cáo, tài liệu vận hành |
-| `INTEGRATIONS/` | Phương án tích hợp; chỉ GitHub đã được xác minh quyền truy cập qua phiên ChatGPT |
-| `tests/`, `scripts/`, `.github/` | Kiểm thử, quy tắc cộng tác và CI |
-
-## Nguyên tắc vận hành và giới hạn
-
-- `DONE` và `APPROVED` chỉ khi có bằng chứng; hệ thống không tự đánh giá tính đúng đắn nghiệp vụ của chứng cứ.
-- Approval qua CLI chỉ ghi lời khai người vận hành, **chưa xác thực vai trò hoặc chữ ký số**.
-- Bằng chứng được lưu bằng đường dẫn + SHA-256; không phải kho lưu bằng chứng chống sửa đổi.
-- SQLite local, chưa có HA, SSO, hệ thống IAM, backup tập trung hoặc môi trường production.
-- GitHub Actions kiểm thử mã nguồn; không đồng nghĩa code đã được triển khai hoặc Agent đang chạy.
-- Không đưa dữ liệu người dùng, OTP, API key, token, chứng cứ thật hoặc `.factory-state/` lên repository public.
-
-## Tài liệu dành cho cộng tác viên
-
-- [Kiến trúc và biên tin cậy](DOCUMENTATION/architecture/ARCHITECTURE.md)
-- [Hướng dẫn chạy](DOCUMENTATION/operating-guides/QUICKSTART.md)
-- [Quy tắc đóng góp](CONTRIBUTING.md)
-- [Chính sách bảo mật](SECURITY.md)
-- [GitHub setup](INTEGRATIONS/github/SETUP.md)
-- [Lộ trình](DOCUMENTATION/operating-guides/level-roadmap.md)
-- [Changelog](DOCUMENTATION/release-notes/CHANGELOG.md)
-
-**Bản phát hành này chỉ là nền tảng quản trị có kiểm thử, chưa phải AI Software Factory tự vận hành hoàn chỉnh.**
+Xem [Kiến trúc](docs/ARCHITECTURE.md), [Vận hành tự động](docs/AUTOMATION.md), [Bảo mật](SECURITY.md), [Quy trình cộng tác](CONTRIBUTING.md), [Lộ trình](docs/ROADMAP.md).

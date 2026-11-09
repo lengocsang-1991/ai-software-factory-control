@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from . import __version__
 from .store import FactoryStore, PRIORITIES, STATUSES, GATE_KINDS
+from .automation import AutomationEngine, RECIPES, SimulationProvider
 
 DEFAULT_DB = Path(__file__).resolve().parents[1] / ".factory-state" / "factory.db"
 
@@ -62,6 +63,31 @@ def parser():
     r.add_argument("--project", required=True)
     serve = cmds.add_parser("serve", help="Bảng điều khiển READ-ONLY tại 127.0.0.1")
     serve.add_argument("--port", type=int, default=8765)
+    auto = cmds.add_parser("automation", help="Điều phối Agent theo quy trình, chờ phê duyệt (không sửa mã)")
+    sa = auto.add_subparsers(dest="operation", required=True)
+    enqueue = sa.add_parser("enqueue")
+    enqueue.add_argument("--project", required=True)
+    enqueue.add_argument("--objective", required=True)
+    enqueue.add_argument("--recipe", default="discovery", choices=sorted(RECIPES))
+    enqueue.add_argument("--provider", default="simulation", choices=("simulation", "openai"))
+    enqueue.add_argument("--task-id")
+    li = sa.add_parser("list"); li.add_argument("--project", required=True)
+    sh = sa.add_parser("show"); sh.add_argument("--run", required=True)
+    manifest = sa.add_parser("manifest"); manifest.add_argument("--run", required=True)
+    retry = sa.add_parser("retry"); retry.add_argument("--run", required=True)
+    intake = sa.add_parser("intake", help="Chỉ đọc issue factory:ready do chủ repo tạo; nhập vào SQLite local")
+    intake.add_argument("--project", required=True)
+    intake.add_argument("--enqueue", action="store_true", help="Đưa issue vào hàng đợi Agent theo discovery")
+    intake.add_argument("--provider", default="simulation", choices=("simulation", "openai"))
+    decide = sa.add_parser("decide"); decide.add_argument("--run", required=True)
+    decide.add_argument("--decision", choices=("APPROVED", "REJECTED"), required=True)
+    decide.add_argument("--actor", required=True); decide.add_argument("--note", default="")
+
+    worker = cmds.add_parser("worker", help="Thực thi tuần tự các Agent; mặc định chỉ mô phỏng")
+    worker.add_argument("--provider", default="simulation", choices=("simulation", "openai"))
+    worker.add_argument("--confirm-cost", action="store_true", help="Bắt buộc khi dùng API OpenAI tính phí")
+    worker.add_argument("--loop", action="store_true", help="Worker chạy liên tục ở máy chủ riêng")
+    worker.add_argument("--interval", type=int, default=30, help="Giây giữa các lần kiểm tra, 2-3600")
     return p
 
 
@@ -85,6 +111,37 @@ def dispatch(store: FactoryStore, args):
     if cmd == "gate":
         if op == "list": return store.gates(args.project)
         if op == "decide": return store.decide_gate(args.project, args.number, args.decision, args.approver, args.evidence_id, args.note)
+    if cmd == "automation":
+        engine = AutomationEngine(store)
+        if op == "enqueue": return engine.create(args.project, args.objective, args.recipe, args.provider, args.task_id)
+        if op == "list": return engine.list(args.project)
+        if op == "show": return engine.get(args.run)
+        if op == "manifest": return engine.output_manifest(args.run)
+        if op == "retry": return engine.retry(args.run)
+        if op == "intake":
+            from .github_intake import ingest
+            return ingest(store, args.project, enqueue=args.enqueue, provider=args.provider)
+        if op == "decide": return engine.decide(args.run, args.decision, args.actor, args.note)
+    if cmd == "worker":
+        import time
+        if not 2 <= args.interval <= 3600:
+            raise ValueError("Interval phải từ 2 đến 3600 giây")
+        if args.provider == "openai":
+            if not args.confirm_cost:
+                raise ValueError("Worker OpenAI cần --confirm-cost (lời gọi API có thể phát sinh chi phí)")
+            from .providers import OpenAITextProvider
+            provider = OpenAITextProvider()
+        else:
+            provider = SimulationProvider()
+        engine = AutomationEngine(store)
+        if not args.loop:
+            return engine.run_one(args.provider, provider) or {"status": "NO_QUEUED_RUN"}
+        try:
+            while True:
+                engine.run_one(args.provider, provider)
+                time.sleep(args.interval)
+        except KeyboardInterrupt:
+            return {"status": "WORKER_STOPPED"}
     if cmd == "report": return store.report(args.project)
     if cmd == "serve":
         from .web import serve
@@ -100,7 +157,7 @@ def main(argv=None):
         if result is not None:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0
-    except (ValueError, sqlite3.IntegrityError, OSError) as exc:
+    except (ValueError, RuntimeError, sqlite3.IntegrityError, OSError) as exc:
         print(f"LỖI: {exc}", file=sys.stderr)
         return 2
 

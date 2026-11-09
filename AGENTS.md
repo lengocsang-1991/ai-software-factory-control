@@ -1,14 +1,12 @@
-# Agent hướng dẫn dành cho công cụ hỗ trợ lập trình
+# AI coding agent policy
 
-Áp dụng cho toàn repository:
+Agent roles được định nghĩa trong `AGENTS/registry.json`. Phiên bản 1.3 có bộ điều phối text-only, **không chạy shell, tự sửa code, PR, merge hoặc deploy**.
 
-1. Không ghi token, mật khẩu, OTP, khóa, dữ liệu khách hàng hoặc bằng chứng nghiệp vụ vào code, commit hay log.
-2. Tránh giả định Agent đang chạy. Các thư mục `AGENTS/*` chỉ là đặc tả thiết kế.
-3. Mọi thay đổi code phải đi qua nhánh riêng, PR, kiểm thử và phê duyệt; không tự merge hay tự deploy.
-4. Chỉ thay đổi những phần thuộc phạm vi nhiệm vụ. Giữ hoạt động tương thích Python 3.11+.
-5. Chạy `python scripts/validate_factory.py` và `python -m unittest discover -s tests -v` trước khi đề nghị review.
-6. Không sửa trạng thái `APPROVED`/`DONE` để né Quality Gate. Không dùng dữ liệu thử làm bằng chứng thực tế.
-7. Không triển khai hệ thống ra Internet: dashboard không có đăng nhập và chỉ hỗ trợ localhost.
-8. Nếu thiếu công cụ hoặc chưa xác minh GitHub identity, ghi trạng thái `NOT_VERIFIED` và báo rõ giới hạn.
-
-Xem `DOCUMENTATION/architecture/ARCHITECTURE.md` và `SECURITY.md`.
+1. Không giả định 16 vai trò tương đương 16 tiến trình AI luôn hoạt động.
+2. Không đưa token, API key, OTP, dữ liệu cá nhân, SQLite DB lên repo.
+3. Không chạy tác vụ tính phí khi thiếu `--confirm-cost` hoặc chưa có ủy quyền.
+4. Bắt buộc lưu kết quả thật; output mô phỏng phải gắn nhãn `SIMULATED`, không được duyệt như kết quả thật.
+5. Bằng chứng SHA-256 không chứng minh chất lượng công việc hoặc danh tính người duyệt.
+6. Mọi sửa đổi mã nguồn phải theo nhánh riêng, PR, CI và phê duyệt. Không tự merge hoặc deploy.
+7. Luôn chạy `python scripts/validate_factory.py` và `python -m unittest discover -s tests -v`.
+8. Bảo mật read-only GitHub issue intake, không dùng `pull_request_target` với secrets hoặc code chưa được tin cậy.

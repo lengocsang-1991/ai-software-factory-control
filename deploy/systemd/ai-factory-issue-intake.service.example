@@ -1,0 +1,16 @@
+[Unit]
+Description=AI Software Factory - read-only GitHub issue intake
+
+[Service]
+Type=oneshot
+User=ai-factory
+Group=ai-factory
+WorkingDirectory=/opt/ai-software-factory
+EnvironmentFile=/etc/ai-factory/worker.env
+ExecStart=/usr/bin/python3 -m factory_control --db /var/lib/ai-factory/factory.db automation intake --project FACTORY --enqueue --provider openai
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/ai-factory
+UMask=0077

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "deployment_status": "DESIGN_ONLY",
+  "deployment_status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED",
   "agents": [
     {
       "id": "01",
@@ -9,10 +9,10 @@
       "responsibility": "Nghiên cứu công nghệ, thị trường, đối thủ, giải pháp kỹ thuật",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Research brief và so sánh phương án",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "02",
@@ -21,10 +21,10 @@
       "responsibility": "Đặc tả nghiệp vụ, user stories, acceptance criteria",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "SRS và backlog",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "03",
@@ -33,10 +33,10 @@
       "responsibility": "Quản lý roadmap, tính năng, ưu tiên",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Product brief và roadmap",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "04",
@@ -45,10 +45,10 @@
       "responsibility": "Kiến trúc, database, API, tích hợp",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Architecture & Design Package",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "05",
@@ -57,10 +57,10 @@
       "responsibility": "Thiết kế UI/UX trực quan, responsive, khả dụng",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "UI specification và prototype",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "06",
@@ -69,10 +69,10 @@
       "responsibility": "Giao diện web, ứng dụng di động",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Frontend source code và kiểm thử",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "07",
@@ -81,10 +81,10 @@
       "responsibility": "API, logic nghiệp vụ, xác thực, phân quyền",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Backend source code và API tests",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "08",
@@ -93,10 +93,10 @@
       "responsibility": "Thiết kế dữ liệu, migration, tối ưu",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Schema và migration plan",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "09",
@@ -105,10 +105,10 @@
       "responsibility": "Kiểm thử chức năng, tích hợp, dữ liệu, hiệu năng",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Test plan và Test Report",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "10",
@@ -117,10 +117,10 @@
       "responsibility": "Kiểm tra bảo mật, lỗ hổng và dữ liệu nhạy cảm",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Security review",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "11",
@@ -129,10 +129,10 @@
       "responsibility": "Review mã, chất lượng, bảo trì",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Code review report",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "12",
@@ -141,10 +141,10 @@
       "responsibility": "CI/CD và môi trường triển khai",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Pipeline configuration và deployment plan",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "13",
@@ -153,10 +153,10 @@
       "responsibility": "Kiểm toán độc lập sản phẩm, thử nghiệm",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Independent Audit Report",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "14",
@@ -165,10 +165,10 @@
       "responsibility": "Quản lý tài liệu và hồ sơ bàn giao",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Guides, release notes",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "15",
@@ -177,10 +177,10 @@
       "responsibility": "Giám sát vận hành, sự cố, chỉ số",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Operations report và incident log",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     },
     {
       "id": "16",
@@ -189,10 +189,10 @@
       "responsibility": "Tối ưu hiệu năng, điểm nghẽn, quy trình",
       "input": "Nhiệm vụ/đặc tả/dữ liệu được phép truy cập",
       "output": "Optimization recommendations",
-      "allowed_tools": "Chỉ công cụ được xác minh & cấp quyền cho dự án",
+      "allowed_tools": "Chỉ sinh nội dung văn bản qua provider opt-in; không shell, git write, merge hoặc deploy",
       "acceptance": "Có tiêu chí nghiệm thu và bằng chứng phù hợp",
       "evidence": "Đường dẫn/commit/log/báo cáo xác minh được",
-      "status": "DESIGNED_NOT_DEPLOYED"
+      "status": "TEXT_ANALYSIS_RUNTIME_AVAILABLE_PROVIDER_REQUIRED"
     }
   ]
 }
