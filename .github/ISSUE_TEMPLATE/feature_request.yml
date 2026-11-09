@@ -1,0 +1,22 @@
+name: Đề xuất tính năng
+description: Yêu cầu nghiệp vụ và tiêu chí nghiệm thu
+labels: [enhancement]
+body:
+  - type: textarea
+    id: value
+    attributes:
+      label: Vấn đề và giá trị cần đạt
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Tiêu chí nghiệm thu
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: Tác động bảo mật, dữ liệu và quyền truy cập
+    validations:
+      required: true

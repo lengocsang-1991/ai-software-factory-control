@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "workflow_name": "8-stage software delivery",
+  "stages": [
+    {
+      "order": 1,
+      "id": "idea",
+      "name": "Ý tưởng",
+      "deliverable": "Product Brief",
+      "gate": "GATE 1"
+    },
+    {
+      "order": 2,
+      "id": "specification",
+      "name": "SPEC",
+      "deliverable": "Software Requirements Specification",
+      "gate": "GATE 2"
+    },
+    {
+      "order": 3,
+      "id": "design",
+      "name": "Thiết kế",
+      "deliverable": "Architecture & Design Package",
+      "gate": "GATE 3"
+    },
+    {
+      "order": 4,
+      "id": "development",
+      "name": "Lập trình",
+      "deliverable": "Source Code & Build Artifacts",
+      "gate": "GATE 4"
+    },
+    {
+      "order": 5,
+      "id": "testing",
+      "name": "Kiểm thử",
+      "deliverable": "Test Report",
+      "gate": "GATE 5"
+    },
+    {
+      "order": 6,
+      "id": "auditing",
+      "name": "Kiểm toán",
+      "deliverable": "Independent Audit Report",
+      "gate": "GATE 6"
+    },
+    {
+      "order": 7,
+      "id": "approval",
+      "name": "Phê duyệt",
+      "deliverable": "Approval Record",
+      "gate": "GATE 7"
+    },
+    {
+      "order": 8,
+      "id": "deployment",
+      "name": "Triển khai",
+      "deliverable": "Deployment & Operations Report",
+      "gate": "GATE 8"
+    }
+  ]
+}

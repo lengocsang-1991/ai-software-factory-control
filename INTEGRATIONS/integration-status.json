@@ -1,0 +1,62 @@
+{
+  "verified_at": "2026-11-09",
+  "integrations": [
+    {
+      "service": "ChatGPT",
+      "status": "AVAILABLE_IN_CURRENT_CONVERSATION",
+      "note": "Trung tâm phân tích/điều phối trong phiên; không có chạy nền mặc định"
+    },
+    {
+      "service": "GitHub",
+      "status": "CONNECTED_TARGET_ACCOUNT_VERIFIED",
+      "note": "GitHub connector xác minh tài khoản lengocsang-1991 và repository ai-software-factory-control (public); workflow/PR phải xác minh riêng khi chạy",
+      "target_account": "lengocsang-1991",
+      "observed_account": "lengocsang-1991"
+    },
+    {
+      "service": "Codex",
+      "status": "NOT_VERIFIED",
+      "note": "Chưa xác minh đường thực thi/ủy quyền cụ thể trong phiên"
+    },
+    {
+      "service": "ChatGPT Work",
+      "status": "NOT_VERIFIED",
+      "note": "Không khẳng định có quyền khởi chạy tác vụ Work từ phiên này"
+    },
+    {
+      "service": "Google AI Studio",
+      "status": "ADAPTER_IMPLEMENTED_NOT_CONNECTED",
+      "note": "Có Gemini Interactions API adapter chạy text-only (unit test mock); chưa có GEMINI_API_KEY/GEMINI_MODEL, chưa test lời gọi thật."
+    },
+    {
+      "service": "Google Cloud",
+      "status": "NOT_VERIFIED",
+      "note": "Chưa có dự án đích hoặc quyền triển khai"
+    },
+    {
+      "service": "Firebase",
+      "status": "NOT_VERIFIED",
+      "note": "Chưa có project đích"
+    },
+    {
+      "service": "PostgreSQL",
+      "status": "NOT_VERIFIED",
+      "note": "Chưa có kết nối database"
+    },
+    {
+      "service": "n8n",
+      "status": "NOT_VERIFIED",
+      "note": "Chưa có instance/credentials"
+    },
+    {
+      "service": "MCP",
+      "status": "DESIGN_ONLY",
+      "note": "Sẵn sàng thiết kế tích hợp khi được cấp endpoint và quyền"
+    },
+    {
+      "service": "OpenAI API",
+      "status": "ADAPTER_IMPLEMENTED_NOT_CONNECTED",
+      "note": "Có OpenAI Responses API adapter chạy text-only (unit test mock); chưa có OPENAI_API_KEY/OPENAI_MODEL."
+    }
+  ]
+}

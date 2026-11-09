@@ -1,0 +1,26 @@
+# Local operational state: never commit private project data
+.factory-state/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+node_modules/
+.DS_Store
+
+.venv/
+build/
+dist/
+*.egg-info/
+.vscode/
+.idea/

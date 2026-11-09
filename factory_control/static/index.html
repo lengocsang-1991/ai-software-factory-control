@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Software Factory — Control</title><link rel="stylesheet" href="/style.css"></head>
+<body><header><div class="wrap"><div class="eyebrow">FACTORY CONTROL / LOCAL MVP</div><h1>AI Software Factory</h1><p>Trung tâm theo dõi dự án và cổng kiểm soát chất lượng. Chế độ <strong>chỉ đọc</strong>, không thực hiện triển khai.</p></div></header>
+<main class="wrap"><section class="stats"><div class="stat"><span>Dự án</span><strong id="count-projects">—</strong></div><div class="stat"><span>Hoàn thành</span><strong id="count-completed">—</strong></div><div class="stat"><span>Đang theo dõi</span><strong id="count-active">—</strong></div></section>
+<section class="panel"><div class="heading"><h2>Danh mục dự án</h2><span class="pill">Dữ liệu SQLite cục bộ</span></div><p id="feedback" class="muted">Đang tải…</p><div class="scroll"><table><thead><tr><th>Mã dự án</th><th>Tên</th><th>Phụ trách</th><th>Giai đoạn</th><th>Trạng thái</th></tr></thead><tbody id="project-list"></tbody></table></div></section>
+<section class="panel" id="detail" hidden><div class="heading"><h2 id="detail-title">Chi tiết</h2><span class="pill" id="detail-stage"></span></div><h3>Nhiệm vụ</h3><div class="scroll"><table><thead><tr><th>Mã</th><th>Nhiệm vụ</th><th>Người phụ trách</th><th>Trạng thái</th></tr></thead><tbody id="task-list"></tbody></table></div><h3>Cổng kiểm soát</h3><div id="gate-list" class="gate-grid"></div></section>
+<footer>Bản 1.1 — Dữ liệu thật do người vận hành nhập. Chưa có cơ chế xác thực/phân quyền từ xa. Không mở cổng ra Internet.</footer></main><script src="/app.js" defer></script></body></html>

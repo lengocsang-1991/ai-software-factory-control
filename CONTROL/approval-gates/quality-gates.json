@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "gates": [
+    {
+      "id": "GATE 1",
+      "name": "Product Requirements Approved",
+      "approval": "EVIDENCE_AND_AUTHORIZED_APPROVAL",
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "id": "GATE 2",
+      "name": "SPEC Validated",
+      "approval": "EVIDENCE_AND_AUTHORIZED_APPROVAL",
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "id": "GATE 3",
+      "name": "Architecture Reviewed",
+      "approval": "EVIDENCE_AND_AUTHORIZED_APPROVAL",
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "id": "GATE 4",
+      "name": "Development Completed",
+      "approval": "EVIDENCE_AND_AUTHORIZED_APPROVAL",
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "id": "GATE 5",
+      "name": "Tests Passed",
+      "approval": "EVIDENCE_AND_AUTHORIZED_APPROVAL",
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "id": "GATE 6",
+      "name": "Independent Audit Passed",
+      "approval": "EVIDENCE_AND_AUTHORIZED_APPROVAL",
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "id": "GATE 7",
+      "name": "Release Approved",
+      "approval": "EVIDENCE_AND_AUTHORIZED_APPROVAL",
+      "status": "NOT_VERIFIED"
+    },
+    {
+      "id": "GATE 8",
+      "name": "Deployment Verified",
+      "approval": "EVIDENCE_AND_AUTHORIZED_APPROVAL",
+      "status": "NOT_VERIFIED"
+    }
+  ]
+}

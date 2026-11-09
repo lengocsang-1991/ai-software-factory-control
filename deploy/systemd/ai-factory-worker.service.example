@@ -1,0 +1,23 @@
+[Unit]
+Description=AI Software Factory - opt-in OpenAI text review worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ai-factory
+Group=ai-factory
+WorkingDirectory=/opt/ai-software-factory
+EnvironmentFile=/etc/ai-factory/worker.env
+ExecStart=/usr/bin/python3 -m factory_control --db /var/lib/ai-factory/factory.db worker --provider openai --confirm-cost --loop --interval 30
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/ai-factory
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
